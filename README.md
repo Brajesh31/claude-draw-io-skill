@@ -1,269 +1,116 @@
-# draw-io Diagram Skill
+# claude-draw-io-skill
 
-A Claude Code skill for creating, editing, and managing draw.io diagrams with professional quality standards.
+A Claude Code skill for creating, editing, validating, and exporting structured draw.io diagrams.
 
-## Purpose
+## Overview
 
-This skill enables AI-assisted creation and maintenance of draw.io architecture diagrams, flowcharts, and technical documentation visuals. It ensures consistent styling, proper layout, and automated PNG conversion for presentations and documentation.
+This skill supports diagram workflows where layout, typography, alignment, and technical accuracy matter. It works with draw.io XML files and helps maintain diagrams used in architecture documentation, engineering specifications, technical presentations, and process explanations.
 
-## When to Use This Skill
+The workflow favors editing the diagram source and regenerating visual exports instead of manually modifying generated images.
 
-Use this skill when you need to:
+## Supported Workflows
 
-- Create or edit `.drawio` XML diagram files
-- Convert diagrams to PNG format with transparent backgrounds
-- Adjust element positions and layouts programmatically
-- Ensure consistent font families (especially for Quarto slides)
-- Work with AWS architecture diagrams using official icons
-- Maintain professional diagram quality with accessibility standards
-- Debug layout issues or element overlaps
+- Create architecture diagrams and infrastructure views.
+- Edit existing `.drawio` XML files.
+- Build flowcharts, sequence diagrams, and process maps.
+- Arrange nodes, containers, labels, and connectors.
+- Apply consistent fonts and visual styles.
+- Work with cloud architecture icons.
+- Convert diagram files to PNG for documents and slides.
+- Review layout problems and improve readability.
 
-## How It Works
+## Working with Diagram Files
 
-The skill provides:
+Use `.drawio` as the editable source format. Treat exported PNG files as generated outputs. Make changes in the XML source and regenerate the image after editing.
 
-1. **Direct XML Editing**: Manipulates `.drawio` files as structured XML
-2. **Automated Conversion**: Converts diagrams to high-resolution PNG via pre-commit hooks or scripts
-3. **Layout Calculations**: Computes proper spacing, alignment, and margins
-4. **Icon Integration**: Searches and integrates official AWS icons
-5. **Quality Assurance**: Applies design principles and accessibility guidelines
+## Installation
 
-## Key Features
-
-### 1. Font Management
-
-Ensures consistent typography across diagrams:
-
-- Sets `defaultFontFamily` in mxGraphModel
-- Applies `fontFamily` to individual text elements
-- Recommended: "Noto Sans JP" for Japanese text support
-
-### 2. PNG Conversion
-
-Multiple conversion methods:
+Clone the skill into the Claude Code skills directory:
 
 ```bash
-# Via pre-commit hook (all files)
-mise exec -- pre-commit run --all-files
-
-# Specific file via pre-commit
-mise exec -- pre-commit run convert-drawio-to-png --files assets/my-diagram.drawio
-
-# Direct script execution
-bash ~/.claude/skills/draw-io/scripts/convert-drawio-to-png.sh assets/diagram.drawio
+git clone https://github.com/Brajesh31/claude-draw-io-skill.git ~/.claude/skills/draw-io
 ```
 
-Conversion produces:
-- 2x scale (high resolution)
-- Transparent background
-- PNG format suitable for presentations
+Some workflows in this repository use command-line conversion utilities, Python scripts, and pre-commit configuration. Review the available scripts and their dependencies before running them.
 
-### 3. Layout Adjustment
+## Usage
 
-Programmatic element positioning:
-
-- Calculate element centers: `y + (height / 2)`
-- Align multiple elements by matching center coordinates
-- Maintain minimum 30px margins from container boundaries
-- Position arrows to avoid label overlaps (20px+ clearance)
-
-### 4. AWS Icon Integration
-
-Search and integrate official AWS service icons:
-
-```bash
-python ~/.claude/skills/draw-io/scripts/find_aws_icon.py ec2
-python ~/.claude/skills/draw-io/scripts/find_aws_icon.py lambda
-```
-
-Uses latest `mxgraph.aws4.*` icon set.
-
-### 5. Design Principles
-
-Enforces professional standards:
-
-- **Clarity**: Simple, visually clean diagrams
-- **Consistency**: Unified colors, fonts, icon sizes, line thickness
-- **Accuracy**: Precise technical representation
-- **Accessibility**: Sufficient color contrast, pattern usage
-- **Progressive Disclosure**: Staged diagrams for complex systems
-
-### 6. Quality Checklist
-
-Automated validation ensures:
-
-- No background color (transparent)
-- Appropriate font sizes (1.5x standard for readability)
-- Arrows on back layer (no overlaps)
-- 30px+ margins from container boundaries
-- Official AWS service names and latest icons
-- Visual verification of PNG output
-
-## Usage Examples
-
-### Example 1: Create AWS Architecture Diagram
-
-```xml
-<!-- Set font family -->
-<mxGraphModel defaultFontFamily="Noto Sans JP" ...>
-
-  <!-- Background frame with proper margins -->
-  <mxCell id="vpc" style="rounded=1;strokeWidth=3;...">
-    <mxGeometry x="500" y="20" width="560" height="430" />
-  </mxCell>
-
-  <!-- Title with 30px margin from frame top -->
-  <mxCell id="title" value="VPC" style="text;fontSize=18;fontFamily=Noto Sans JP;">
-    <mxGeometry x="510" y="50" width="540" height="35" />
-  </mxCell>
-
-  <!-- Arrow with explicit coordinates -->
-  <mxCell id="arrow1" style="edgeStyle=..." edge="1">
-    <mxGeometry relative="1" as="geometry">
-      <mxPoint x="100" y="200" as="sourcePoint"/>
-      <mxPoint x="500" y="200" as="targetPoint"/>
-    </mxGeometry>
-  </mxCell>
-
-  <!-- Arrow label with offset -->
-  <mxCell id="label1" value="API Request" style="edgeLabel;fontSize=14;fontFamily=Noto Sans JP;">
-    <mxGeometry relative="1" as="geometry">
-      <mxPoint x="0" y="-20" as="offset"/>
-    </mxGeometry>
-  </mxCell>
-</mxGraphModel>
-```
-
-### Example 2: Convert Diagram to PNG
-
-```bash
-# Edit the diagram
-vim architecture.drawio
-
-# Convert to PNG (via pre-commit hook)
-mise exec -- pre-commit run convert-drawio-to-png --files architecture.drawio
-
-# Result: architecture.drawio.png (2x resolution, transparent)
-```
-
-### Example 3: Find AWS Icon
-
-```bash
-# Search for EC2 icon
-python ~/.claude/skills/draw-io/scripts/find_aws_icon.py ec2
-
-# Output: mxgraph.aws4.compute.ec2_instance
-```
-
-### Example 4: Progressive Disclosure Diagram Set
-
-For complex systems, create staged diagrams:
-
-1. **Context Diagram**: External perspective (users, external systems)
-2. **System Diagram**: Main components (services, databases)
-3. **Component Diagram**: Technical details (APIs, queues, caches)
-4. **Deployment Diagram**: Infrastructure (VPCs, regions, availability zones)
-5. **Data Flow Diagram**: Data transformations and flows
-6. **Sequence Diagram**: Time-series interactions
-
-## Best Practices
-
-### Text Width Calculation
-
-Japanese text requires 30-40px per character:
-
-```xml
-<!-- For 10-character text: 300-400px width -->
-<mxGeometry x="140" y="60" width="400" height="40" />
-```
-
-### Arrow Layering
-
-Always place arrows immediately after title in XML:
-
-```xml
-<mxCell id="title" value="..." .../>
-<mxCell id="arrow1" style="edgeStyle=..." .../> <!-- Back layer -->
-<mxCell id="box1" .../> <!-- Front layer -->
-```
-
-### Container Margins
-
-Ensure sufficient spacing inside grouping boxes:
+Invoke the skill for diagram tasks:
 
 ```text
-Frame: y=20, height=400 → range 20-420
-Element top: y ≥ 50 (30px margin)
-Element bottom: y ≤ 390 (30px margin)
+/draw-io
 ```
 
-### Transparent Backgrounds
+Provide the diagram file, intended audience, required elements, relationship directions, output format, and any layout constraints.
 
-Remove background color for theme adaptability:
+## Recommended Workflow
 
-```xml
-<!-- Remove this -->
-<mxGraphModel background="#ffffff" ...>
+1. Inspect the existing diagram and its XML structure.
+2. Identify the nodes, containers, labels, and connectors that need changes.
+3. Preserve stable element identifiers where possible.
+4. Apply consistent typography, spacing, and alignment.
+5. Keep connectors behind foreground elements when appropriate.
+6. Avoid edge crossings and label collisions.
+7. Export the updated diagram.
+8. Inspect the exported image at its actual display size.
+9. Confirm that the editable source and generated output are consistent.
 
-<!-- Use this -->
-<mxGraphModel page="0" ...>
+## Layout and Typography
+
+- Use a consistent font family across the diagram.
+- Set the default font at the diagram model level when appropriate.
+- Apply explicit font settings to text elements when rendering consistency is important.
+- Keep adequate spacing between labels, connectors, and shapes.
+- Align related elements using consistent centers or edges.
+- Maintain margins inside grouping containers.
+- Use a transparent background when the diagram must adapt to different document themes.
+- Avoid decorative effects that reduce technical clarity.
+
+## Diagram Organization
+
+For complex systems, split the explanation into focused views:
+
+| Diagram | Main purpose |
+|---|---|
+| Context | Show users and external systems |
+| System architecture | Show major application components |
+| Component | Explain internal modules and dependencies |
+| Deployment | Show infrastructure and runtime placement |
+| Data flow | Show data movement and transformation |
+| Sequence | Show time-ordered interactions |
+
+## Export Workflow
+
+The repository includes conversion-related scripts and configuration. Review their expected arguments and environment before execution.
+
+A pre-commit workflow may be used where configured:
+
+```bash
+pre-commit run --all-files
 ```
 
-## File Structure
+Use the repository's specific conversion script when a single diagram needs to be exported. Confirm the output dimensions, background, and text readability before publishing it.
 
-```
-~/.claude/skills/draw-io/
-├── SKILL.md                          # This documentation
-├── README.md                         # User-facing guide
-├── scripts/
-│   ├── convert-drawio-to-png.sh     # PNG conversion script
-│   └── find_aws_icon.py             # AWS icon search utility
-└── references/
-    ├── layout-guidelines.md         # Detailed layout rules
-    └── aws-icons.md                 # AWS icon catalog
-```
+## Quality Checklist
 
-## Integration with Presentations
+- Diagram source remains editable.
+- All nodes and connectors are present.
+- Labels are readable and do not overlap.
+- Arrows communicate direction clearly.
+- Group containers have sufficient internal margins.
+- Fonts are consistent.
+- The background matches the intended use.
+- Exported images have been visually inspected.
+- Generated files are not mistaken for the editable source.
 
-For reveal.js slides (Quarto), add to YAML header:
+## Repository Contents
 
-```yaml
----
-title: "Your Presentation"
-format:
-  revealjs:
-    auto-stretch: false
----
-```
+- `SKILL.md`: Main diagram editing instructions.
+- `scripts/`: Diagram conversion and icon utility scripts where included.
+- `references/`: Layout and diagram resource guidance where included.
+- `.pre-commit-config.yaml`: Automated checks and conversion hooks where configured.
+- `README.md`: Setup, workflows, and quality checklist.
 
-This ensures correct image sizing on mobile devices.
+## Maintenance
 
-## Quality Assurance Checklist
-
-Before finalizing any diagram:
-
-- [ ] No background color set (`page="0"`)
-- [ ] Font size appropriate (18px+ for readability)
-- [ ] Arrows placed at back layer
-- [ ] Arrows not overlapping labels (verified in PNG)
-- [ ] Arrow endpoints 20px+ from labels
-- [ ] Arrows not penetrating boxes/icons
-- [ ] Internal elements have 30px+ margins from frames
-- [ ] AWS service names are official/correct
-- [ ] AWS icons use latest version (`mxgraph.aws4.*`)
-- [ ] No unnecessary decorative elements
-- [ ] PNG conversion visually verified
-
-## References
-
-- [Layout Guidelines](references/layout-guidelines.md) - Detailed spacing and alignment rules
-- [AWS Icons](references/aws-icons.md) - Complete AWS icon catalog
-- [draw.io Documentation](https://www.drawio.com/doc/) - Official draw.io reference
-
-## Skill Metadata
-
-- **Name**: draw-io
-- **Type**: Diagram creation and editing
-- **Input**: `.drawio` XML files
-- **Output**: `.drawio.png` high-resolution images
-- **Dependencies**: drawio CLI, Python 3.x, pre-commit hooks
+Keep source diagrams and generated exports synchronized. When changing conversion scripts or layout conventions, verify the workflow on a small representative diagram before applying it to a large collection.
